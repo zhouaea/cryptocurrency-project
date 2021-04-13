@@ -1,8 +1,8 @@
 package tcp
 
 import (
-	"MP1/errorchecker"
-	"MP1/messages"
+	"cryptocurrency-project/errorchecker"
+	"cryptocurrency-project/messages"
 	"bufio"
 	"fmt"
 	"math/rand"

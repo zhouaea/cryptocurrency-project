@@ -1,8 +1,10 @@
 package main
 
 import (
-	"cryptocurrency-project/initialization"
-	"cryptocurrency-project/tcp"
+	"./initialization"
+	"./tcp"
+	"fmt"
+	"./telog"
 )
 
 func main() {
@@ -15,4 +17,21 @@ func main() {
 
 	// Continuously scan user input for instructions on which node to send a message to.
 	tcp.ExecuteCommands(node, nodes)
+
+	log := telog.Telog{}
+	log.Init()
+
+	log.AddBlock("Goofy mints 5 dollars")
+	log.AddBlock("Goofy paid Alice 5 dollars")
+	log.AddBlock("Alice paid Bob 5 dollars")
+
+	fmt.Println("# Blocks in Log:", log.GetNumBlocks())
+
+	fmt.Println("Log is valid:", log.Check())
+
+	log.Attack(1)
+
+	fmt.Println("After attack, Log is valid:", log.Check())
 }
+
+

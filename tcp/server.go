@@ -1,8 +1,8 @@
 package tcp
 
 import (
-	"MP1/errorchecker"
-	"MP1/messages"
+	"cryptocurrency-project/errorchecker"
+	"cryptocurrency-project/messages"
 	"fmt"
 	"net"
 	"time"
@@ -14,7 +14,7 @@ func (node Node) UnicastReceive() {
 	port := ":" + node.Port
 	listener, err := net.Listen("tcp", port)
 	errorchecker.CheckError(err)
-	defer listener.Close()
+		defer listener.Close()
 	fmt.Println("Listening to tcp port " + port + " was successful!")
 	fmt.Println("To send a message, type: send <destination_id_number> <message>")
 

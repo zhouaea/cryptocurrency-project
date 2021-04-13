@@ -1,8 +1,8 @@
 package initialization
 
 import (
-	"MP1/errorchecker"
-	"MP1/tcp"
+	"cryptocurrency-project/errorchecker"
+	"cryptocurrency-project/tcp"
 	"bufio"
 	"fmt"
 	"os"

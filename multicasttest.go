@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
+	"cryptocurrency-project/application"
 	"cryptocurrency-project/initialization"
-	"cryptocurrency-project/tcp"
+	"os"
 )
 
 func main() {
@@ -11,8 +13,13 @@ func main() {
 	node, nodes := initialization.InitializeNode()
 
 	// Set up TCP listening for process, continuously listening for messages and printing them out.
-	go node.UnicastReceive()
+	go node.ReceiveMessages()
 
-	// Continuously scan user input for instructions on which node to send a message to.
-	tcp.ExecuteCommands(node, nodes)
+	// Continuously scan user input for instructions on what message to send all nodes.
+	// Send message to all nodes.
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		message := application.ReadCommands(scanner, node, nodes)
+		go node.MulticastSendSimulatedDelay(message, nodes)
+	}
 }

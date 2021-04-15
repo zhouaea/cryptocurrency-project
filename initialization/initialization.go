@@ -2,8 +2,10 @@ package initialization
 
 import (
 	"cryptocurrency-project/errorchecker"
+	"cryptocurrency-project/messages"
 	"cryptocurrency-project/tcp"
 	"bufio"
+	"cryptocurrency-project/telog"
 	"fmt"
 	"os"
 	"regexp"
@@ -12,11 +14,11 @@ import (
 )
 
 // InitializeNode parses the specified process id from the command line, and returns a corresponding node,
-// as well as a list of potential nodes to send messages to.
+// as well as a list of nodes to send messages to.
 func InitializeNode() (node tcp.Node, nodes []tcp.Node){
 	// Read command line for id of process.
 	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stderr, "Incorrect Usage. Do: go run process.go <node_id_number>\n")
+		fmt.Fprintf(os.Stderr, "Incorrect Usage. Do: go run multicasttest.go <node_id_number>\n")
 		os.Exit(1)
 	}
 
@@ -26,6 +28,15 @@ func InitializeNode() (node tcp.Node, nodes []tcp.Node){
 
 	// Parse information from configuration file about specified process.
 	node, nodes = ParseConfiguration(processId)
+
+	// Initialize a blockchain to store verified transactions and a slice for unverified transactions for each node.
+	for _, node := range nodes {
+		node.UnverifiedTransactions = make([]messages.Transaction, 5)
+		telog := telog.Telog{}
+		telog.Init()
+		node.Blockchain = telog
+	}
+
 	return
 }
 

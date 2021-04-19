@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./node"
+	"./user"
 	"./tx"
 )
 
@@ -23,7 +23,7 @@ func main() {
 
 	transactions := tx.TxArray{}
 
-	nodes := node.Nodes{}
+	nodes := user.Nodes{}
 	alice := nodes.NewNode("Alice")
 	bob := nodes.NewNode("Bob")
 

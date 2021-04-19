@@ -1,8 +1,9 @@
+// TODO: GET RID OF THIS AFTER USING IT AS SAMPLE CODE
 package tcp
 
 import (
 	"cryptocurrency-project/errorchecker"
-	"cryptocurrency-project/messages"
+	"cryptocurrency-project/message"
 	"fmt"
 	"math/rand"
 	"net"
@@ -13,7 +14,7 @@ import (
 // including oneself, via tcp.
 func (node Node) MulticastSendSimulatedDelay(message string, nodes []Node) {
 	sendTime := time.Now()
-	messageWrapper := messages.Message{Message: message, SenderId: node.Id, TimeSent: sendTime}
+	messageWrapper := message.Message{Message: message, SenderId: node.Id, TimeSent: sendTime}
 
 	rand.Seed(time.Now().UnixNano())
 	delay := node.MinDelay + rand.Intn(node.MaxDelay - node.MinDelay)
@@ -23,7 +24,7 @@ func (node Node) MulticastSendSimulatedDelay(message string, nodes []Node) {
 }
 
 // SendMessage sends a Message object to all nodes, including oneself via tcp.
-func SendMessage(nodes []Node, msg messages.Message) {
+func SendMessage(nodes []Node, msg message.Message) {
 	for k, node := range nodes {
 		address := node.Ip + ":"
 		address += node.Port

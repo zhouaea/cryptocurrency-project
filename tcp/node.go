@@ -1,7 +1,8 @@
+// TODO: GET RID OF THIS AFTER USING IT AS SAMPLE CODE
 package tcp
 
 import (
-	"cryptocurrency-project/messages"
+	"cryptocurrency-project/message"
 	"cryptocurrency-project/telog"
 	"fmt"
 )
@@ -12,11 +13,11 @@ type Node struct {
 	Port string
 	MinDelay int
 	MaxDelay int
-	UnverifiedTransactions []messages.Transaction
+	UnverifiedTransactions []message.Transaction
 	Blockchain telog.Telog
 }
 
-// Return a node object from a list of nodes based on their id.
+// Return a user object from a list of nodes based on their id.
 func locateNode(id int, nodes []Node) Node {
 	return nodes[id]
 }

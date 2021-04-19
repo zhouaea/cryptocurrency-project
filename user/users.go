@@ -32,8 +32,8 @@ func (n *Users) NewUser(name string) user {
 	return new
 }
 
-func SendStartup(clientAddress string) {
-	message := message.InitialConnection{"STARTED UP", clientAddress}
+func SendStartup(userAddress string) {
+	message := message.InitialConnection{"STARTED UP", userAddress}
 	ipaddresses.GetController()
 	tcp.Encode()
 }

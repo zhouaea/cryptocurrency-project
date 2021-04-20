@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	// Read command line for user id to act as.
+	// Read command line for client id to act as.
 	if len(os.Args) != 2 {
 		fmt.Println("Format: go run minerprocess.go <client_index> ")
 	}

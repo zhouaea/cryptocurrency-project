@@ -1,4 +1,4 @@
-package user
+package client
 
 import (
 	"../esign"
@@ -8,21 +8,21 @@ import (
 	"cryptocurrency-project/tcp"
 )
 
-type user struct {
+type client struct {
 	Name       string
 	Sk ed25519.PrivateKey
 	Pk ed25519.PublicKey
 }
 
-type Users struct {
-	all []user
+type Clients struct {
+	all []client
 }
 
-// Creates a new user
-func (n *Users) NewUser(name string) user {
+// Creates a new client
+func (n *Clients) Newclient(name string) client {
 	pk, sk := esign.GenerateKeyPair()
 
-	new := user{
+	new := client{
 		Name: name,
 		Sk: sk,
 		Pk: pk,
@@ -32,8 +32,8 @@ func (n *Users) NewUser(name string) user {
 	return new
 }
 
-func SendStartup(userAddress string) {
-	message := message.InitialConnection{"STARTED UP", userAddress}
+func SendStartup(clientAddress string) {
+	message := message.InitialConnection{"STARTED UP", clientAddress}
 	ipaddresses.GetController()
 	tcp.Encode()
 }

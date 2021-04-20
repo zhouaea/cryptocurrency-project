@@ -17,7 +17,7 @@ type Node struct {
 	Blockchain telog.Telog
 }
 
-// Return a user object from a list of nodes based on their id.
+// Return a client object from a list of nodes based on their id.
 func locateNode(id int, nodes []Node) Node {
 	return nodes[id]
 }

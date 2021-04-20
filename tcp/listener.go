@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// Configure a user to listen for tcp connections.
+// Configure a client to listen for tcp connections.
 func (node Node) ReceiveMessages() {
 	// Listen to an unused TCP port on localhost.
 	port := ":" + node.Port
@@ -21,21 +21,21 @@ func (node Node) ReceiveMessages() {
 
 	// Listen for TCP connections until the process is closed.
 	for {
-		// Wait for a connection from a user to our TCP port and then set up a TCP channel with them.
+		// Wait for a connection from a client to our TCP port and then set up a TCP channel with them.
 		conn, err := listener.Accept()
 		errorchecker.CheckError(err)
 		fmt.Println("Connection to sender was successful!")
 
-		// Handle user as a goroutine to be able to handle multiple clients at once.
+		// Handle client as a goroutine to be able to handle multiple clients at once.
 		go handleClient(conn)
 	}
 	return
 }
 
-// handleClient reads a message sent by another user, printing the message as well as the sender id and time received.
+// handleClient reads a message sent by another client, printing the message as well as the sender id and time received.
 func handleClient(conn net.Conn) {
 	defer conn.Close()
-	// Read and print message sent by other user through TCP channel.
+	// Read and print message sent by other client through TCP channel.
 	message := new(message.Message)
 	Decode(conn, message)
 	time := time.Now()

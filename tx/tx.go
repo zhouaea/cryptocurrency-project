@@ -55,7 +55,7 @@ func (txa *TxArray) AppendNewTx(
 		coinOwned := 0
 		mostRecentExpense := tx{}
 
-		// If senderPk is a user, loop through the transaction array
+		// If senderPk is a client, loop through the transaction array
 		for i := len(txa.txs)-1; i >= 0; i-- {
 			tx := txa.txs[i]
 
@@ -78,7 +78,7 @@ func (txa *TxArray) AppendNewTx(
 				coinOwned += tx.amountToReceiver
 			}
 
-			// Store the most recent time that the user spent coins
+			// Store the most recent time that the client spent coins
 			if (*tx.senderPk).Equal(*senderPk) {
 				mostRecentExpense = tx
 			}

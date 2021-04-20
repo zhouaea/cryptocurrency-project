@@ -14,7 +14,7 @@ package telog
 
 import (
 	"crypto/sha256"
-	"cryptocurrency-project/messages"
+	"cryptocurrency-project/message"
 	"fmt"
 )
 
@@ -25,7 +25,7 @@ type hashPointer struct {
 
 type block struct {
 	hashPointer hashPointer
-	data messages.Transaction
+	data        message.Transaction
 }
 
 type Telog struct {
@@ -50,7 +50,7 @@ func (t *Telog) hashSha256(block block) string {
 
 // AddBlock adds a block with data to the right end of a tamper evident log, where the left end of the log is the first
 // data block added and the right end of the log is the last data block added.
-func (t *Telog) AddBlock(data messages.Transaction) {
+func (t *Telog) AddBlock(data message.Transaction) {
 	// Create a new block.
 	newBlock := block{
 		// Use the old hash pointer of the head to connect the new block to the right-most block

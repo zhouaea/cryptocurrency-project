@@ -3,6 +3,7 @@ package main
 import (
 	"cryptocurrency-project/errorchecker"
 	"cryptocurrency-project/ipaddresses"
+	"cryptocurrency-project/miner"
 	"fmt"
 	"net"
 	"os"
@@ -19,12 +20,12 @@ func main() {
 	errorchecker.CheckError(err)
 
 	// Connect to specified tcp port of miner.
-	minerAddress := ipaddresses.GetMiners()
-	port := strings.Split(minerAddress[nodeIndex], ":")[1]
+	minerAddresses := ipaddresses.GetMiners()
+	port := strings.Split(minerAddresses[nodeIndex], ":")[1]
 	listener, err := net.Listen("tcp", port)
 
 	// Send startup message to controller.
-	SendStartup(sender: minerAddress)
+	miner.SendStartup(nodeIndex)
 
 	for {
 		// Upon reception of ClientTransactionRequest objects, add them to the transaction array.

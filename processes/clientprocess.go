@@ -19,21 +19,20 @@ func main() {
 	clientIndex, err := strconv.Atoi(os.Args[1])
 	errorchecker.CheckError(err)
 
+	// TODO I think clients actually do not need to listen to tcp ports because they will only have to communicate with the controller.
 	// Connect to specified tcp port of client.
-	clientAddress := ipaddresses.GetClients()
-	port := strings.Split(clientAddress[clientIndex], ":")[1]
+	clientAddresses := ipaddresses.GetClients()
+	port := strings.Split(clientAddresses[clientIndex], ":")[1]
 	listener, err := net.Listen("tcp", port)
 
-	// Store connection to the controller and the miners.
+	// Send startup message to controller and store the tcp channel from client to controller.
+	controllerChannel := client.SendStartup(clientIndex)
 
+	// Wait for signal from controller that signifies that all processes are running.
+	client.WaitForController(controllerChannel)
 
-
-	// Send startup message to controller.
-	client.SendStartup(clientAddress)
-
-	// Wait for signal from controller.
-	WaitForController(listener)
+	// Store connection to miners.
 
 	// Periodically send out hard-coded clientTransactionRequest objects to nodes.
-	SendRequest()
+	client.SendRequest()
 }

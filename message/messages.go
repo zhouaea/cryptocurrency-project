@@ -1,6 +1,6 @@
 package message
 
-type InitialConnection struct{
+type StartupMessage struct{
 	Message string
 	Sender string
 }

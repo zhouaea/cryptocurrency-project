@@ -27,6 +27,9 @@ func main() {
 	// Send startup message to controller.
 	miner.SendStartup(nodeIndex)
 
+	// Upon receival of propose message from controller, verify that the transactions are valid with correct signatures.
+	// If so, telog.AddBlock(). Tell the controller that a propose message was received with PROPOSE RECEIVED.
+	miner.MiningProtocol(listener)
 	for {
 		// Upon reception of ClientTransactionRequest objects, add them to the transaction array.
 		if (message == "REQUEST") {

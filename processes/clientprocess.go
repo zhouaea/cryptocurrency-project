@@ -3,12 +3,9 @@ package main
 import (
 	"cryptocurrency-project/client"
 	"cryptocurrency-project/errorchecker"
-	"cryptocurrency-project/ipaddresses"
 	"fmt"
-	"net"
 	"os"
 	"strconv"
-	"strings"
 )
 
 func main() {
@@ -19,20 +16,14 @@ func main() {
 	clientIndex, err := strconv.Atoi(os.Args[1])
 	errorchecker.CheckError(err)
 
-	// TODO I think clients actually do not need to listen to tcp ports because they will only have to communicate with the controller.
-	// Connect to specified tcp port of client.
-	clientAddresses := ipaddresses.GetClients()
-	port := strings.Split(clientAddresses[clientIndex], ":")[1]
-	listener, err := net.Listen("tcp", port)
+	// NOTE: Clients actually do not need to listen to tcp ports because they will only have to communicate with the controller.
 
-	// Send startup message to controller and store the tcp channel from client to controller.
+	// Send startup message to controller via READY message and store the communication channel.
 	controllerChannel := client.SendStartup(clientIndex)
 
 	// Wait for signal from controller that signifies that all processes are running.
 	client.WaitForController(controllerChannel)
 
-	// Store connection to miners.
-
 	// Periodically send out hard-coded clientTransactionRequest objects to nodes.
-	client.SendRequest()
+	client.SendRequest(10000)
 }

@@ -6,8 +6,10 @@ import (
 	"cryptocurrency-project/message"
 	"cryptocurrency-project/tcp"
 	"fmt"
+	"math/rand"
 	"net"
 	"sync"
+	"time"
 )
 
 var requiredProcesses = 7
@@ -44,7 +46,7 @@ func WaitForStartUps(listener net.Listener) map[string]net.Conn {
 // the tcp channel that connects to the process.
 func recordNodeConnections(wg sync.WaitGroup, channel net.Conn, nodeConnections map[string]net.Conn) {
 	// Read and print message sent by miner or client through a tcp channel.
-	startupMessage := new(message.StartupMessage)
+	startupMessage := new(message.Message)
 	tcp.Decode(channel, startupMessage)
 
 	// Associate the role of a process with the tcp channel that connects to the process.
@@ -54,18 +56,43 @@ func recordNodeConnections(wg sync.WaitGroup, channel net.Conn, nodeConnections 
 	wg.Done()
 }
 
-// StartClients sends a PROCEED message to every client via goroutines.
+// StartClients sends a PROCEED message via a string to every client via goroutines.
 func StartClients(nodeConnections map[string]net.Conn) {
 	numberOfClients := len(ipaddresses.GetClients())
-	// A full message object with the sender is not required since the clients will know that messages going through
-	// their particular connection must come from the controller.
+	// NOTE: A full message object with a sender field is not required, since the clients will know that messages going
+	// through this particular connection must come from the controller.
 	startupMessage := "PROCEED"
 
+	// Send the client a start up message in the form of a string.
 	for i := 0; i < numberOfClients; i++ {
-		go sendClientStartup(nodeConnections["Client " + string(i)], &startupMessage)
+		go tcp.Encode(nodeConnections["Client " + string(i)], &startupMessage)
 	}
 }
 
-func sendClientStartup(clientConnection net.Conn, startupMessage *string) {
-	tcp.Encode(clientConnection, *startupMessage)
+// ChooseNode choose a random node to propose via a message in the form of a string, if the node does not have transactions to propose,
+// choose another node. Once all miners have accepted or rejected a proposal
+func ChooseNode(delayInterval int) {
+	// Create and record connections to each miner.
+	minerChannels := make(map[int]net.Conn)
+
+	minerAddresses := ipaddresses.GetMiners()
+	numberOfMiners := len(minerAddresses)
+	for i := 0; i < numberOfMiners; i++ {
+		minerChannel, err := net.Dial("tcp", minerAddresses[i])
+		errorchecker.CheckError(err)
+		minerChannels[i] = minerChannel
+	}
+
+	// Create a MINING SUCCESSFUL message (string) to send to all chosen miners.
+	proposeMessage := "MINING SUCCESSFUL"
+	
+	for {
+		// Randomly choose a miner.
+		rand.Seed(time.Now().UnixNano())
+		minerChosenIndex := rand.Intn(numberOfMiners)
+		
+		// Send a MINING SUCCESSFUL message to the randomly chosen miner.
+		go tcp.Encode(minerChannels[minerChosenIndex], proposeMessage)
+		time.Sleep(time.Duration(delayInterval) * time.Millisecond)
+	}
 }

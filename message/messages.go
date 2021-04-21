@@ -1,6 +1,6 @@
 package message
 
-type StartupMessage struct{
+type Message struct{
 	Message string
 	Sender string
 }

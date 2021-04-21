@@ -53,7 +53,6 @@ func (txa *TxArray) AppendNewTx(
 		amountToReceiver = value
 	} else {
 		coinOwned := 0
-		mostRecentExpense := tx{}
 
 		// If senderPk is a client, loop through the transaction array
 		for i := len(txa.txs)-1; i >= 0; i-- {
@@ -65,23 +64,17 @@ func (txa *TxArray) AppendNewTx(
 				return
 			}
 
-			if mostRecentExpense.senderPk != nil {
-				// If pk of most recent expense = most recent income
-				if (*tx.receiverPk).Equal(*mostRecentExpense.senderPk) {
-					coinOwned += mostRecentExpense.amountToSelf
-					break
-				}
+			// if the current transaction is the sender's most recent expense
+			if (*tx.senderPk).Equal(*senderPk) {
+				coinOwned += tx.amountToSelf
+				break
 			}
 
-			// Sum up unspent coins
+			// Sum up coins received
 			if (*tx.receiverPk).Equal(*senderPk) {
 				coinOwned += tx.amountToReceiver
 			}
 
-			// Store the most recent time that the client spent coins
-			if (*tx.senderPk).Equal(*senderPk) {
-				mostRecentExpense = tx
-			}
 		}
 
 		// Check if you have enough coin

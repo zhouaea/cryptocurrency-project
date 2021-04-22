@@ -126,5 +126,11 @@ func listenToMiner(minerChannel net.Conn, minerStoragePointer *MinerStorage) {
 	// TODO Use real transaction struct
 	var transaction string
 	tcp.Decode(minerChannel, transaction)
+	verify(transaction)
+}
+
+// Ensure transaction is valid before adding to blockchain.
+func verify(transaction string) {
+
 	// minerStoragePointer.Blockchain.AddBlock(transaction)
 }

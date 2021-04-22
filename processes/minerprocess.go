@@ -4,6 +4,8 @@ import (
 	"cryptocurrency-project/errorchecker"
 	"cryptocurrency-project/ipaddresses"
 	"cryptocurrency-project/miner"
+	"cryptocurrency-project/telog"
+	"cryptocurrency-project/tx"
 	"fmt"
 	"net"
 	"os"
@@ -16,36 +18,34 @@ func main() {
 	if len(os.Args) != 2 {
 		fmt.Println("Format: go run minerprocess.go <client_index> ")
 	}
-	nodeIndex, err := strconv.Atoi(os.Args[1])
+	minerIndex, err := strconv.Atoi(os.Args[1])
 	errorchecker.CheckError(err)
 
 	// Connect to specified tcp port of miner.
 	minerAddresses := ipaddresses.GetMiners()
-	port := strings.Split(minerAddresses[nodeIndex], ":")[1]
+	port := strings.Split(minerAddresses[minerIndex], ":")[1]
 	listener, err := net.Listen("tcp", port)
 
 	// Send startup message to controller.
-	miner.SendStartup(nodeIndex)
+	controllerChannel := miner.SendStartup(minerIndex)
 
-	// Upon receival of propose message from controller, verify that the transactions are valid with correct signatures.
-	// If so, telog.AddBlock(). Tell the controller that a propose message was received with PROPOSE RECEIVED.
-	miner.MiningProtocol(listener)
-	for {
-		// Upon reception of ClientTransactionRequest objects, add them to the transaction array.
-		if (message == "REQUEST") {
-			ReceiveClientTransactions()
-		}
+	// Initialize connection to clients.
+	clientChannels := miner.ConnectToClients()
 
-		// Upon reception of CHOSEN message, propose block with transactions in transaction array.
-		if (message == "CHOSEN") {
-			Propose()
-		}
+	// Initialize connection to other miners.
+	minerChannels := make ([]net.Conn, 0, len(ipaddresses.GetMiners()))
+	go miner.ConnectToOtherMiners(minerIndex, minerChannels)
+	go miner.ListenToOtherMiners(listener, minerChannels)
 
-		// Upon receival of propose message, verify that the transactions are valid with correct signatures. If so, telog.AddBlock().
-		// Tell the controller that a propose message was received with PROPOSE RECEIVED.
-		if (message == "PROPOSE") {
-			VerifyPropose()
-		}
-	}
+
+	// Create a miner object to represent the data stored in a miner.
+	minerStorage := miner.MinerStorage{Blockchain: telog.Telog{}, UnverifiedTransactions: tx.TxArray{}}
+
+	// Upon reception of ClientTransactionRequest objects, add them to the transaction array.
+	// Upon reception of MINING SUCCESSFUL message, propose block with transactions in transaction array.
+	// Upon receival of propose message, verify that the transactions are valid with correct signatures. If so, telog.AddBlock().
+	//     Tell the controller that a propose message was received with PROPOSE RECEIVED.
+	miner.MiningProtocol(controllerChannel, clientChannels, minerChannels, listener, &minerStorage)
+
 
 }

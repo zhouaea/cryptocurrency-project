@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"net"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -66,21 +67,34 @@ func WaitForController(controllerChannel net.Conn) {
 	}
 }
 
-// SendRequest() periodically multicasts transactions to miners.
-func SendRequest(delayInterval int) {
-	// Create and record connections to each miner.
-	minerChannels := make(map[string]net.Conn)
-
-	minerAddresses := ipaddresses.GetMiners()
-	for i := 0; i < len(minerAddresses); i++ {
-		minerChannel, err := net.Dial("tcp", minerAddresses[i])
+func ConnectToMiners(listener net.Listener) []net.Conn {
+	totalMiners := len(ipaddresses.GetMiners())
+	minersConnected := 0
+	minerChannels := make([]net.Conn, 0, totalMiners)
+	for {
+		// Wait for a connection from a miner to our TCP port and then set up a TCP channel with them.
+		minerChannel, err := listener.Accept()
 		errorchecker.CheckError(err)
-		minerChannels["Miner " + string(i)] = minerChannel
-	}
 
+		// Add miner connection to array.
+		minerChannels[minersConnected] = minerChannel
+
+		// Increment count of nodes connected.
+		minersConnected += 1
+		fmt.Printf("Connection to process was successful! %i miners connected.", minersConnected)
+
+		// Exit function once all miners are connected.
+		if minersConnected >= totalMiners {
+			return minerChannels
+		}
+	}
+}
+
+// SendRequest() periodically multicasts transactions to miners.
+func SendRequest(minerChannels []net.Conn, delayInterval int) {
 	// TODO Create an iterable data structure of transactions to periodically send out transactions, one for each client ID
 	for transaction := range transactions {
-		go MulticastSendToMinersSimulatedDelay(transaction, minerChannels)
+		go MulticastSendTransactionToMinersSimulatedDelay(transaction, minerChannels)
 		// Wait a set amount of time before sending another transaction to the miners.
 		time.Sleep(time.Duration(delayInterval) * time.Millisecond)
 	}
@@ -88,7 +102,7 @@ func SendRequest(delayInterval int) {
 
 // MulticastSendSimulatedDelay waits for a random bounded time to simulate message delay and then sends a transaction
 // object to specified destinations via tcp.
-func MulticastSendToMinersSimulatedDelay(clientTransaction Transaction, minerChannels map[string]net.Conn) {
+func MulticastSendTransactionToMinersSimulatedDelay(clientTransaction Transaction, minerChannels []net.Conn) {
 	// Delay sending message for a random bounded time in milliseconds
 	minDelay := 0
 	maxDelay := 10000

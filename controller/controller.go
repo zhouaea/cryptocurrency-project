@@ -29,11 +29,11 @@ func WaitForStartUps(listener net.Listener) map[string]net.Conn {
 		nodesConnected += 1
 		fmt.Printf("Connection to process was successful! %i nodes connected.", nodesConnected)
 
-		// Handle client as a goroutine to be able to handle multiple clients at once.
+		// Read start up message sent by a node through channel and associate an identity with the channel.
 		wg.Add(1)
-		go recordNodeConnections(wg, channel, nodeConnections)
+		go recordIdentityToChannel(wg, channel, nodeConnections)
 
-		// Exit function once enough nodes are connected
+		// Exit function once enough nodes are connected.
 		if nodesConnected >= requiredProcesses {
 			// Wait for all connections to be recorded before proceeding.
 			wg.Wait()
@@ -42,9 +42,9 @@ func WaitForStartUps(listener net.Listener) map[string]net.Conn {
 	}
 }
 
-// recordNodeConnections reads a startup message sent through a tcp channel and associates the role of a process with
+// recordIdentityToChannel reads a startup message sent through a tcp channel and associates the role of a process with
 // the tcp channel that connects to the process.
-func recordNodeConnections(wg sync.WaitGroup, channel net.Conn, nodeConnections map[string]net.Conn) {
+func recordIdentityToChannel(wg sync.WaitGroup, channel net.Conn, nodeConnections map[string]net.Conn) {
 	// Read and print message sent by miner or client through a tcp channel.
 	startupMessage := new(message.Message)
 	tcp.Decode(channel, startupMessage)
@@ -74,7 +74,6 @@ func StartClients(nodeConnections map[string]net.Conn) {
 func ChooseNode(delayInterval int) {
 	// Create and record connections to each miner.
 	minerChannels := make(map[int]net.Conn)
-
 	minerAddresses := ipaddresses.GetMiners()
 	numberOfMiners := len(minerAddresses)
 	for i := 0; i < numberOfMiners; i++ {

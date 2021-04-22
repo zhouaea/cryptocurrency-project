@@ -8,8 +8,10 @@ import (
 	"cryptocurrency-project/telog"
 	"cryptocurrency-project/tx"
 	"fmt"
+	"math/rand"
 	"net"
 	"os"
+	"time"
 )
 
 type MinerStorage struct {
@@ -79,7 +81,7 @@ func ListenToOtherMiners(listener net.Listener, minerChannels []net.Conn) {
 //    telog.AddBlock(). Tell the controller that a PROPOSAL message was verified or denied with PROPOSAL RECEIVED.
 func MiningProtocol(controllerChannel net.Conn, clientChannels []net.Conn, otherMinerChannels []net.Conn, listener net.Listener, minerStoragePointer *MinerStorage) {
 	go listenToClients(clientChannels, minerStoragePointer)
-	go listenToController(controllerChannel, minerStoragePointer)
+	go listenToController(controllerChannel, otherMinerChannels, minerStoragePointer)
 	go listenToMiners(otherMinerChannels, minerStoragePointer)
 }
 
@@ -98,20 +100,32 @@ func listenToClient(clientChannel net.Conn, minerStoragePointer *MinerStorage) {
 }
 
 // Upon reception of MINING SUCCESSFUL message from controller, propose block with transactions in transaction array.
-func listenToController(controllerChannel net.Conn, minerStoragePointer *MinerStorage) {
+func listenToController(controllerChannel net.Conn, otherMinerChannels []net.Conn, minerStoragePointer *MinerStorage) {
 	for {
 		var message string
 		tcp.Decode(controllerChannel, message)
 
 		if message == "MINING SUCCESSFUL" {
-			propose()
+			proposeSimulatedDelay(otherMinerChannels, minerStoragePointer.UnverifiedTransactions.Dequeue())
 		}
 	}
 }
 
 // Propose a block to all nodes.
-func propose() {
+func proposeSimulatedDelay(otherMinerChannels []net.Conn, transaction string) {
+	// Delay sending message for a random bounded time in milliseconds
+	minDelay := 0
+	maxDelay := 10000
+	rand.Seed(time.Now().UnixNano())
+	delay := minDelay + rand.Intn(maxDelay - minDelay)
+	fmt.Printf("Delay is %d milliseconds\n", delay)
+	time.Sleep(time.Duration(delay) * time.Millisecond)
 
+	// Send proposal through TCP channel.
+	for _, minerChannel := range otherMinerChannels {
+		err := tcp.Encode(minerChannel, transaction)
+		errorchecker.CheckError(err)
+	}
 }
 
 // Upon reception of PROPOSAL message, verify that the transactions are valid with correct signatures. If so,
